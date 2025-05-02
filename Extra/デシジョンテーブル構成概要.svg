@@ -1,0 +1,71 @@
+<svg width="450" height="250" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="14">
+  <style>
+    .label { font-weight: bold; }
+    .entry { text-anchor: middle; }
+    .rule-label { font-size: 12px; text-anchor: middle; }
+    .separator { stroke: #666; stroke-width: 1; }
+    .outer-rect { fill: none; stroke: #333; stroke-width: 2; }
+  </style>
+
+  <!-- Outer rectangle -->
+  <rect x="10" y="10" width="430" height="200" class="outer-rect"/>
+
+  <!-- Horizontal separator -->
+  <line x1="10" y1="30" x2="440" y2="30" class="separator" />
+  <line x1="10" y1="125" x2="440" y2="125" class="separator" />
+
+  <!-- Vertical separator -->
+  <line x1="160" y1="10" x2="160" y2="210" class="separator" />
+
+  <!-- Labels for sections -->
+  <text x="20" y="50" class="label">条件記述部</text>
+  <text x="20" y="70">(Condition Stub)</text>
+  <text x="170" y="50" class="label">条件指定部</text>
+  <text x="170" y="70">(Condition Entries)</text>
+
+  <text x="20" y="145" class="label">動作記述部</text>
+  <text x="20" y="165">(Action Stub)</text>
+  <text x="170" y="145" class="label">動作指定部</text>
+  <text x="170" y="165">(Action Entries)</text>
+
+  <!-- Example Conditions -->
+  <text x="30" y="95">C1: 条件1</text>
+  <text x="30" y="115">C2: 条件2</text>
+
+  <!-- Example Actions -->
+  <text x="30" y="185">A1: アクション1</text>
+  <text x="30" y="205">A2: アクション2</text>
+
+  <!-- Example Rule Columns and Entries -->
+  <text x="200" y="25" class="rule-label">R1</text>
+  <line x1="225" y1="10" x2="225" y2="210" class="separator" stroke-dasharray="2,2"/>
+  <text x="200" y="95" class="entry">Y</text>
+  <text x="200" y="115" class="entry">Y</text>
+  <text x="200" y="185" class="entry">X</text>
+  <text x="200" y="205" class="entry"></text>
+
+  <text x="250" y="25" class="rule-label">R2</text>
+  <line x1="275" y1="10" x2="275" y2="210" class="separator" stroke-dasharray="2,2"/>
+  <text x="250" y="95" class="entry">Y</text>
+  <text x="250" y="115" class="entry">N</text>
+  <text x="250" y="185" class="entry"></text>
+  <text x="250" y="205" class="entry">X</text>
+
+  <text x="300" y="25" class="rule-label">R3</text>
+  <line x1="325" y1="10" x2="325" y2="210" class="separator" stroke-dasharray="2,2"/>
+  <text x="300" y="95" class="entry">N</text>
+  <text x="300" y="115" class="entry">Y</text>
+  <text x="300" y="185" class="entry">X</text>
+  <text x="300" y="205" class="entry"></text>
+
+  <text x="350" y="25" class="rule-label">R4</text>
+  <line x1="375" y1="10" x2="375" y2="210" class="separator" stroke-dasharray="2,2"/>
+  <text x="350" y="95" class="entry">N</text>
+  <text x="350" y="115" class="entry">N</text>
+  <text x="350" y="185" class="entry"></text>
+  <text x="350" y="205" class="entry">X</text>
+
+  <text x="405" y="110">...</text>
+  <text x="405" y="195">...</text>
+
+</svg>
