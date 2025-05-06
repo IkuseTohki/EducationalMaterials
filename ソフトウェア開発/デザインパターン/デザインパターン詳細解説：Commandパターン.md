@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Command パターン
 created: 2025-05-05 09:55:13
-updated: 2025-05-06 04:59:52
+updated: 2025-05-06 12:45:42
 draft: true
 tags:
   - ソフトウェア設計
@@ -77,13 +77,14 @@ buttonSave.addActionListener(event -> {
 
 この直接的な呼び出しには、以下のような問題があります。
 
-- **密結合:** `Invoker` (ボタン) が `Receiver` (ドキュメント) の具体的なクラスやメソッドを知っている必要があり、両者の**結合度が高く**なります。もし `Receiver` のインターフェースや実装が変わると、`Invoker` 側の修正も必要になる可能性があります。
-- **操作の柔軟な管理が困難:**
+- **密結合**  
+  `Invoker` (ボタン) が `Receiver` (ドキュメント) の具体的なクラスやメソッドを知っている必要があり、両者の**結合度が高く**なります。もし `Receiver` のインターフェースや実装が変わると、`Invoker` 側の修正も必要になる可能性があります。
+- **操作の柔軟な管理が困難**
   - 実行した操作を後で**取り消したい (Undo)**。
-  - 複数の操作を**記録してまとめて実行（マクロ）**したい。
+  - 複数の操作を**記録してまとめて実行 (マクロ)** したい。
   - 操作の要求を**キューに入れて後で非同期に実行**したい。
   - 操作要求を**ログに記録**したい。
-  - 操作要求を**ネットワーク経由で送信**したい。
+  - 操作要求を**ネットワーク経由で送信**したい。  
     このような要求に、直接的なメソッド呼び出しだけで対応するのは非常に困難です。
 
 ### 1.2.2 操作（リクエスト）自体をオブジェクトとして扱いたい
@@ -114,24 +115,24 @@ Command パターンは、「操作の要求」をオブジェクトとしてカ
 
 Command パターンは、主に以下の 5 つの登場人物（役割）から構成されます。
 
-- **`Command`（命令インターフェース）:**
+- **`Command`（命令インターフェース）**
   - **役割:** すべての具体的なコマンドオブジェクト (`ConcreteCommand`) が実装すべき**共通のインターフェース**を定義します。
   - **主な定義:** 操作を実行するためのメソッド、通常は `execute()` という名前のメソッドを宣言します。オプションとして、操作を取り消すための `undo()` メソッドなどを宣言することもあります。
-- **`ConcreteCommand`（具体的な命令）:**
+- **`ConcreteCommand`（具体的な命令）**
   - **役割:** `Command` インターフェースを実装し、**特定の操作を実行するための具体的な情報**をカプセル化します。
   - **実装:**
     - 操作の対象となるオブジェクトである **`Receiver` への参照**を持ちます。
     - 操作を実行するために必要な**パラメータ**を保持することもあります。
     - `execute()` メソッドが呼び出された際に、保持している `Receiver` オブジェクトの**適切なメソッドを呼び出して**、実際の処理を実行します。
     - `undo()` メソッドが定義されている場合は、`execute()` で行った操作を取り消すためのロジックを実装します。
-- **`Receiver`（受信者、実行者）:**
+- **`Receiver`（受信者、実行者）**
   - **役割:** `Command` オブジェクトからの要求を受けて、**実際のビジネスロジックや処理を実行する**オブジェクトです。
   - **実装:** 要求された操作を実行するための具体的なメソッド（例: `turnOn()`, `saveFile()`, `pasteText()` など）を持ちます。`Command` パターンの他の登場人物については知りません。
-- **`Invoker`（起動者、依頼者）:**
+- **`Invoker`（起動者、依頼者）**
   - **役割:** `Command` オブジェクトを**保持し、その実行タイミングを決定**するオブジェクトです。`execute()` メソッドを呼び出すことで、コマンドの実行を**起動**します。
   - **例:** GUI のボタン、メニュー項目、キーボードショートカットハンドラ、コマンドキュー、マクロ記録機能など。
   - **実装:** `Command` オブジェクト（またはそのリストやキュー）への参照を持ちます。重要なのは、`Invoker` は**具体的な `ConcreteCommand` や `Receiver` のことを知る必要がなく**、`Command` インターフェースの `execute()` メソッドを呼び出すだけである、という点です。
-- **`Client`（利用者）:**
+- **`Client`（利用者）**
   - **役割:** システムの**セットアップ**を担当します。
   - **実装:**
     - `Receiver` オブジェクトを生成します。
@@ -140,53 +141,67 @@ Command パターンは、主に以下の 5 つの登場人物（役割）から
 
 ```mermaid
 classDiagram
+    %% Receiver, Command, Invokerを生成し、関連付ける。
     class Client {
-        + main() // Creates Receiver, Command, Invoker and associates them
+        %% Creates Receiver, Command, Invoker and associates them
+        + main()
     }
-    class Invoker { // e.g., Button, MenuItem
+    %% Commandを実行するタイミングを決める。具体的なCommandやReceiverは知らない。
+    %% e.g. Button, MenuItem
+    class Invoker {
         - command: Command
-        + setCommand(cmd: Command)
-        + invokeAction() // Calls command.execute()
+        + setCommand(command)
+        %% Calls command.execute()
+        + invokeAction()
     }
+    %% 操作実行(execute)の共通IF。undoは任意。
     class Command {
         <<interface>>
         + execute()
-        + undo()* // Optional
+        %% Optional
+        + undo()
     }
+    %% Receiverとパラメータを保持し、executeでReceiverのactionを呼ぶ。
     class ConcreteCommand {
-        - receiver: Receiver // The object that performs the action
-        - parameters // Optional parameters for the action
-        + ConcreteCommand(receiver: Receiver, params)
-        + execute() // Calls receiver.action(parameters)
-        + undo()* // Optional: Calls receiver's inverse action
+        %% The object that performs the action
+        - receiver: Receiver
+        %% Optional parameters for the action
+        - parameters
+        + ConcreteCommand(receiver, params)
+        %% Calls receiver.action(parameters)
+        + execute()
+        %% Optional: Calls receiver's inverse action
+        + undo()
     }
-    class Receiver { // Knows how to perform the operations
-        + action(params) // The actual work is done here
-        + undoAction(params)* // Optional inverse operation
+    %% 実際の処理(action)を実行するクラス。
+    %% Knows how to perform the operations
+    class Receiver {
+        %% The actual work is done here
+        + action(params)
+        %% Optional inverse operation
+        + undoAction(params)
     }
 
     Client --> Receiver : creates
     Client --> ConcreteCommand : creates
-    Client --> Invoker : creates & sets command
-    Invoker o--> Command : holds / invokes
+    Client --> Invoker : creates &<br> sets command
+    Invoker o--> Command : holds / <br>invokes
+    ConcreteCommand --> Receiver : delegates to /<br> holds reference
     ConcreteCommand ..|> Command : implements
-    ConcreteCommand --> Receiver : delegates to / holds reference
-
-    note for Command "操作実行(execute)の共通IF。undoは任意。"
-    note for ConcreteCommand "Receiverとパラメータを保持し、executeでReceiverのactionを呼ぶ。"
-    note for Receiver "実際の処理(action)を実行するクラス。"
-    note for Invoker "Commandを実行するタイミングを決める。具体的なCommandやReceiverは知らない。"
-    note for Client "Receiver, Command, Invokerを生成し、関連付ける。"
 ```
 
 _図: Command パターンのクラス図_
 
 ## 2.2 実装のポイント：操作のカプセル化と委譲
 
-- **操作のカプセル化:** `ConcreteCommand` オブジェクトが、特定の操作を実行するために必要なすべての情報（どの `Receiver` の、どのメソッドを、どのパラメータで呼び出すか）を**内部に保持（カプセル化）**します。これにより、操作自体が独立したオブジェクトとして扱えるようになります。
-- **`Invoker` の独立性:** `Invoker` は `Command` インターフェースにのみ依存し、具体的な `ConcreteCommand` や `Receiver` からは完全に独立します。これにより、`Invoker` を変更することなく、実行するコマンドを自由に入れ替えることができます。
-- **`Receiver` への委譲:** `ConcreteCommand` の `execute()` メソッドの主な役割は、保持している `Receiver` オブジェクトの適切なメソッドを呼び出して、**実際の処理を委譲する**ことです。`Command` オブジェクト自身が複雑なビジネスロジックを持つことは通常ありません。
-- **Undo 機能の実装:** Undo 機能を実現する場合、`ConcreteCommand` は `execute()` を実行する前の `Receiver` の状態を保存しておくか、あるいは `execute()` とは逆の操作を行うロジックを `undo()` メソッド内に実装する必要があります。状態保存には Memento パターンが利用されることもあります。
+- **操作のカプセル化**  
+  `ConcreteCommand` オブジェクトが、特定の操作を実行するために必要なすべての情報（どの `Receiver` の、どのメソッドを、どのパラメータで呼び出すか）を**内部に保持 (カプセル化)** します。これにより、操作自体が独立したオブジェクトとして扱えるようになります。
+- **`Invoker` の独立性**  
+  `Invoker` は `Command` インターフェースにのみ依存し、具体的な `ConcreteCommand` や `Receiver` からは完全に独立します。これにより、`Invoker` を変更することなく、実行するコマンドを自由に入れ替えることができます。
+- **`Receiver` への委譲**  
+  `ConcreteCommand` の `execute()` メソッドの主な役割は、保持している `Receiver` オブジェクトの適切なメソッドを呼び出して、**実際の処理を委譲する**ことです。`Command` オブジェクト自身が複雑なビジネスロジックを持つことは通常ありません。
+- **Undo 機能の実装**  
+  Undo 機能を実現する場合、`ConcreteCommand` は `execute()` を実行する前の `Receiver` の状態を保存しておくか、あるいは `execute()` とは逆の操作を行うロジックを `undo()` メソッド内に実装する必要があります。状態保存には Memento パターンが利用されることもあります。
 
 ## 2.3 コード例：具体的なシナリオでの実装
 
@@ -429,27 +444,27 @@ Command パターンは、他のデザインパターンと連携して使われ
 
 Command パターン自体は「操作のオブジェクト化」というユニークな目的を持っていますが、関連する概念を持つパターンと比較してみましょう。
 
-- **Strategy パターン:**
+- **Strategy パターン**
   - **類似点:** どちらも特定の振る舞い（アルゴリズムや操作）をオブジェクトとしてカプセル化します。
   - **違い:** 主な目的が異なります。Strategy は**アルゴリズムそのものを交換可能にする**ことに焦点を当て、クライアントが Context に Strategy を設定します。Command は**操作の要求（リクエスト）をオブジェクト化**し、要求元と実行者を分離することに焦点を当てます。Command は Undo/Redo やキューイングといった操作管理機能を持つことが多いですが、Strategy は通常持ちません。
-- **Adapter パターン:**
+- **Adapter パターン**
   - **違い:** Adapter は**インターフェースの不適合を解決**するのが目的です。既存のクラスのインターフェースを別のインターフェースに変換します。Command は操作を実行するための**統一インターフェース (`execute`)** を提供し、要求と実行を分離します。インターフェース変換が主目的ではありません。
-- **Observer パターン:**
+- **Observer パターン**
   - **違い:** Observer は、**状態の変化を監視し、通知する**仕組みを提供します。Subject の状態変化が Observer に通知されます。Command は**操作要求**をカプセル化します。状態変化の通知が目的ではありません。（ただし、Observer が通知を受けて Command を実行する、という連携はありえます）
 
 ## 6.2 組み合わせると効果的なパターン
 
 Command パターンは、以下のようなパターンと効果的に組み合わせることができます。
 
-- **Composite パターン:**
+- **Composite パターン**
   - **連携:** 複数の `Command` オブジェクトをまとめて、単一の**マクロコマンド**として扱いたい場合に Composite パターンが役立ちます。`MacroCommand` クラスも `Command` インターフェースを実装し、その `execute` メソッド内で保持している子コマンドの `execute` を順番に呼び出すように実装します。Undo をサポートする場合は、逆順で子コマンドの `undo` を呼び出す必要があります。
-- **Memento パターン:**
+- **Memento パターン**
   - **連携:** Command パターンで **Undo 機能**を実装する際に、操作前の `Receiver` の状態を保存・復元するために Memento パターンがしばしば利用されます。`ConcreteCommand` は `execute` を実行する前に `Receiver` から Memento を取得して保持し、`undo` が呼ばれたらその Memento を使って `Receiver` の状態を元に戻します。
-- **Prototype パターン:**
+- **Prototype パターン**
   - **連携:** 同じ種類のコマンドオブジェクト（ただし、パラメータや `Receiver` が異なる可能性がある）を効率的に生成したい場合に、Prototype パターンを利用して**コマンドオブジェクト自体をコピー**する、という使い方が考えられます。たとえば、コピー可能なコマンドテンプレートを用意しておくようなケースです。
-- **Factory パターン (Factory Method, Abstract Factory):**
+- **Factory パターン (Factory Method, Abstract Factory)**
   - **連携:** `ConcreteCommand` オブジェクトの生成プロセスが複雑な場合や、生成するコマンドの種類を柔軟に切り替えたい場合に、Factory パターンを利用してコマンドオブジェクトの生成をカプセル化できます。
-- **Decorator パターン:**
+- **Decorator パターン**
   - **連携:** コマンドの `execute` や `undo` の前後に、ログ記録やトランザクション管理などの**追加的な責務（機能）を動的に付与**したい場合に、Command オブジェクトを Decorator パターンで修飾（ラップ）することが考えられます。
 
 これらのパターンとの関連性や組み合わせ方を理解することで、Command パターンをより洗練された設計の中で活用し、複雑な要求に応えるソリューションを構築することが可能になります。
@@ -458,25 +473,25 @@ Command パターンは、以下のようなパターンと効果的に組み合
 
 # 7. リファクタリング：いつ Command パターンを導入するか
 
-Command パターンは、システムの機能拡張や要求の変化に伴い、既存のコードを**リファクタリング**して導入されることも多いパターンです。操作の実行方法が複雑化したり、Undo/Redo のような高度な機能が必要になったりした場合に、Command パターンの導入が有効な改善策となることがあります。
+Command パターンは、システムの機能拡張や要求の変化に伴い、既存のコードをリファクタリングして導入されることも多いパターンです。操作の実行方法が複雑化したり、Undo/Redo のような高度な機能が必要になったりした場合に、Command パターンの導入が有効な改善策となることがあります。
 
 ## 7.1 導入のきっかけとなる「コードの不吉な臭い」や状況変化
 
 既存のコードベースに以下のような兆候や状況の変化が見られた場合、Command パターンの導入を検討する価値があります。
 
-- **Invoker と Receiver の密結合:**
+- **Invoker と Receiver の密結合**
   - **症状:** GUI のボタンやメニュー項目などの `Invoker` が、特定のビジネスロジッククラス (`Receiver`) のメソッドを直接呼び出しており、両者が強く依存し合っている。`Invoker` が `Receiver` の詳細を知りすぎている。
   - **問題:** `Invoker` の再利用性が低い。`Receiver` の変更が `Invoker` に影響する。実行する操作を後から変更するのが難しい。
   - **解決策:** Command パターンを導入し、`Invoker` が `Command` インターフェースのみに依存するように変更します。具体的な操作は `ConcreteCommand` にカプセル化し、`Receiver` への委譲を行います。
-- **パラメータ化されたアクションの必要性:**
+- **パラメータ化されたアクションの必要性**
   - **症状:** 実行したい操作の種類やパラメータが、実行時や設定によって変わる。これらの操作要求をキューに入れたり、ログに記録したり、ネットワークで送信したりする必要が出てきた。
   - **問題:** 単純なメソッド呼び出しでは、操作要求自体をデータとして扱うことが難しい。
   - **解決策:** Command パターンを導入し、操作要求を `Command` オブジェクトとしてカプセル化します。これにより、操作をオブジェクトとして受け渡し、保存、実行できるようになります。
-- **Undo/Redo 機能の要求:**
+- **Undo/Redo 機能の要求**
   - **症状:** アプリケーションに「元に戻す」「やり直し」機能を追加する必要が出てきた。
   - **問題:** 直接的なメソッド呼び出しでは、過去の操作を取り消すための情報を管理するのが非常に困難です。
   - **解決策:** Command パターンを導入し、各 `ConcreteCommand` に `undo()` 操作を実装します。実行されたコマンドの履歴を管理することで、Undo/Redo を実現します。
-- **複雑なコールバック処理:**
+- **複雑なコールバック処理**
   - **症状:** イベントハンドラやコールバック関数の中身が複雑になり、複数の処理ステップやパラメータの受け渡しが必要になっている。
   - **問題:** コールバック処理が肥大化し、テストや保守が困難になります。
   - **解決策:** コールバックで実行されるべき処理を `ConcreteCommand` として抽出し、イベントハンドラは単純にその `Command` の `execute` を呼び出すだけにします。
@@ -510,7 +525,7 @@ Command パターンは、システムの機能拡張や要求の変化に伴い
 
 # 8. まとめ ～ Command パターンの本質～
 
-**Command パターン**は、**操作（アクション）の要求をオブジェクトとしてカプセル化**し、それによって**要求元と実行者を分離する**ことを目的とした、振る舞いに関するデザインパターンです。
+Command パターンは、**操作（アクション）の要求をオブジェクトとしてカプセル化**し、それによって**要求元と実行者を分離する**ことを目的とした、振る舞いに関するデザインパターンです。
 
 このパターンを適用することで、
 
@@ -520,10 +535,10 @@ Command パターンは、システムの機能拡張や要求の変化に伴い
 - **非同期処理**や**遅延実行**の基盤となる。
 - 新しい操作の**追加が容易**になる（OCP 準拠）。
 
-といった多くのメリットが得られ、システムの**柔軟性、拡張性、保守性**が向上します。
+といった多くのメリットが得られ、システムの柔軟性、拡張性、保守性が向上します。
 
 その本質は、「**『～してほしい』というリクエスト自体を、具体的な指示書（Command オブジェクト）として表現し、それを『実行係』（Invoker）に渡して、好きなタイミングで『作業担当者』（Receiver）に実行してもらう**」という、役割分担と間接性の導入にあります。
 
-一方で、操作ごとにコマンドクラスが必要になるため**クラス数が増加**し、単純なメソッド呼び出しに比べて**実装がやや複雑になる**というトレードオフも存在します。とくに Undo/Redo の実装は注意が必要です。
+一方で、操作ごとにコマンドクラスが必要になるためクラス数が増加し、単純なメソッド呼び出しに比べて実装がやや複雑になるというトレードオフも存在します。とくに Undo/Redo の実装は注意が必要です。
 
 Command パターンは、GUI のイベント処理から非同期タスク実行、トランザクション管理まで、非常に幅広い応用範囲を持つ強力なパターンです。操作の実行をより柔軟に制御したい、要求と実行をきれいに分離したいと考えた場合に、この「操作のオブジェクト化」という考え方は、設計上の課題を解決するための有効な選択肢となるでしょう。

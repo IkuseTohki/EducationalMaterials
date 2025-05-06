@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Builder パターン
 created: 2025-05-05 12:23:31
-updated: 2025-05-06 09:02:37
+updated: 2025-05-06 12:42:57
 draft: true
 tags:
   - ソフトウェア設計
@@ -129,12 +129,14 @@ Builder パターンは、主に以下の 4 つの役割から構成されます
 ```mermaid
 classDiagram
     class Client
+    %% Builderを使って特定の構築手順を実行(任意)
     class Director {
         - builder: Builder
         + setBuilder(builder: Builder)
         %% Calls builder's build methods in a specific order
         + construct()
     }
+    %% パーツ構築と結果取得のIF
     class Builder {
         <<interface>>
         %% Optional: Reset the builder state
@@ -144,6 +146,7 @@ classDiagram
         + buildStepC()
         + build(): Product
     }
+    %% 具体的なパーツ組み立てとProduct管理
     class ConcreteBuilder {
         - product: Product
         + reset()
@@ -152,6 +155,7 @@ classDiagram
         + buildStepC()
         + build(): Product
     }
+    %% Builderが作るオブジェクト
     class Product {
         %% Complex object with multiple parts
         + addPart(part: String)
@@ -162,11 +166,6 @@ classDiagram
     Director o--> Builder : uses
     ConcreteBuilder ..|> Builder : implements
     ConcreteBuilder --> Product : builds / holds instance
-
-    note for Builder "パーツ構築と結果取得のIF"
-    note for Product "Builderが作るオブジェクト"
-    note for ConcreteBuilder "具体的なパーツ組み立てとProduct管理"
-    note for Director "Builderを使って特定の構築手順を実行(任意)"
 ```
 
 _図: Builder パターンのクラス図 (Director を含む古典的な形式)_
@@ -546,22 +545,22 @@ Builder パターンは、新しいクラスを設計する際に最初から適
 
 既存のコード（とくにコンストラクタや Setter で複雑な初期化を行っているクラス）に Builder パターンを導入する際の、一般的なリファクタリング手順の概要は以下の通りです。（テストによる安全確保が前提です）
 
-1. **`Builder` クラスの作成:**  
-   生成対象の `Product` クラスの `static` なネストクラスとして、新しい `Builder` クラスを作成します。
-2. **フィールドのミラーリング:**  
-   `Product` クラスのフィールドに対応するフィールドを `Builder` クラスにも定義します。オプションパラメータにはデフォルト値を設定します。
-3. **`Builder` のコンストラクタ作成:**  
-   `Product` の生成に必要な**必須パラメータ**を引数に取る `Builder` のコンストラクタを作成します。
-4. **設定メソッドの作成:**  
-   `Product` の**オプションパラメータ**に対応する設定メソッドを `Builder` に作成します。各メソッドは `Builder` 自身 (`this`) を返すようにして、Fluent Interface を実現します。
-5. **`build()` メソッドの作成:**  
-   `Builder` クラスに、最終的な `Product` オブジェクトを生成して返す `build()` メソッドを作成します。このメソッド内で、`Product` の（通常は `private` な）コンストラクタを呼び出します。必要であれば、パラメータの検証ロジックもここに追加します。
-6. **`Product` のコンストラクタ修正:**  
-   `Product` クラスに、`Builder` オブジェクトを引数に取る新しいコンストラクタ（アクセス修飾子は `private` や `package-private` が望ましい）を追加します。このコンストラクタ内で、引数の `Builder` オブジェクトから値を取得して自身のフィールドを初期化します。
-   既存の古いコンストラクタや Setter メソッドは、段階的に**非推奨 (Deprecated)** にするか、最終的には削除します。
-7. **クライアントコードの修正:**  
-   `Product` を `new` していた箇所や Setter で初期化していた箇所を、新しい `Builder` を使った生成方法に置き換えます。
-   （例: `new Product(a, b, c, d)` → `Product.builder(a, b).optionC(c).optionD(d).build()`）
+1. **`Builder` クラスの作成:**
+   - 生成対象の `Product` クラスの `static` なネストクラスとして、新しい `Builder` クラスを作成します。
+2. **フィールドのミラーリング:**
+   - `Product` クラスのフィールドに対応するフィールドを `Builder` クラスにも定義します。オプションパラメータにはデフォルト値を設定します。
+3. **`Builder` のコンストラクタ作成:**
+   - `Product` の生成に必要な**必須パラメータ**を引数に取る `Builder` のコンストラクタを作成します。
+4. **設定メソッドの作成:**
+   - `Product` の**オプションパラメータ**に対応する設定メソッドを `Builder` に作成します。各メソッドは `Builder` 自身 (`this`) を返すようにして、Fluent Interface を実現します。
+5. **`build()` メソッドの作成:**
+   - `Builder` クラスに、最終的な `Product` オブジェクトを生成して返す `build()` メソッドを作成します。このメソッド内で、`Product` の（通常は `private` な）コンストラクタを呼び出します。必要であれば、パラメータの検証ロジックもここに追加します。
+6. **`Product` のコンストラクタ修正:**
+   - `Product` クラスに、`Builder` オブジェクトを引数に取る新しいコンストラクタ（アクセス修飾子は `private` や `package-private` が望ましい）を追加します。このコンストラクタ内で、引数の `Builder` オブジェクトから値を取得して自身のフィールドを初期化します。
+   - 既存の古いコンストラクタや Setter メソッドは、段階的に**非推奨 (Deprecated)** にするか、最終的には削除します。
+7. **クライアントコードの修正:**
+   - `Product` を `new` していた箇所や Setter で初期化していた箇所を、新しい `Builder` を使った生成方法に置き換えます。
+   - （例: `new Product(a, b, c, d)` → `Product.builder(a, b).optionC(c).optionD(d).build()`）
 8. **テスト:** 各ステップの後、および最終的に、テストを実行してリファクタリングによってオブジェクトが正しく生成され、外部から見た振る舞いが変わっていないことを確認します。
 
 このリファクタリングプロセスにより、複雑なオブジェクトの生成コードが、より読みやすく、安全で、保守しやすい形へと改善されます。
