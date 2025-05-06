@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Strategy パターン
 created: 2025-05-03 00:00:59
-updated: 2025-05-04 15:47:33
+updated: 2025-05-06 04:49:11
 draft: true
 tags:
   - ソフトウェア設計
@@ -306,9 +306,9 @@ Strategy パターンを適用すると、アルゴリズムごとに `ConcreteS
 `ConcreteStrategy` がアルゴリズムを実行するためには、`Context` が持つデータや、クライアントから渡されたデータが必要になる場合があります。このデータを `Strategy` にどのように渡すかは設計上のポイントです。
 考えられる方法としては、
 
-1.  `Strategy` のメソッド（例: `algorithmInterface`）の引数として必要なデータをすべて渡す。
-2.  `Context` オブジェクト自身を `Strategy` のメソッドに引数として渡し、`Strategy` が `Context` から必要なデータを取得する。
-    後者の方法は `Strategy` のメソッドシグネチャをシンプルに保てますが、`Strategy` が `Context` の内部により依存することになり、両者の結合度を高める可能性があります。
+1. `Strategy` のメソッド（例: `algorithmInterface`）の引数として必要なデータをすべて渡す。
+2. `Context` オブジェクト自身を `Strategy` のメソッドに引数として渡し、`Strategy` が `Context` から必要なデータを取得する。
+   後者の方法は `Strategy` のメソッドシグネチャをシンプルに保てますが、`Strategy` が `Context` の内部により依存することになり、両者の結合度を高める可能性があります。
 
 ## 4.4 パフォーマンスに関する考慮（通常は軽微）
 
