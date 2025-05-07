@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Strategy パターン
 created: 2025-05-03 00:00:59
-updated: 2025-05-06 04:49:11
+updated: 2025-05-07 14:21:41
 draft: true
 tags:
   - ソフトウェア設計
@@ -112,30 +112,35 @@ Strategy パターンは、主に以下の 3 つの役割から構成されま�
 
 ```mermaid
 classDiagram
+    %% Holds a Strategy object.Delegates algorithm execution.
     class Context {
         - currentStrategy: Strategy
-        + Context(strategy: Strategy) // Constructor Injection
-        + setStrategy(strategy: Strategy) // Setter Injection
-        + executeStrategy() // Delegates to currentStrategy.algorithmInterface()
+        %% Constructor Injection
+        + Context(strategy: Strategy)
+        %% Setter Injection
+        + setStrategy(strategy: Strategy)
+        %% Delegates to currentStrategy.algorithmInterface()
+        + executeStrategy()
     }
+    %% Common interface for all algorithms.
     class Strategy {
         <<interface>>
-        + algorithmInterface() // The operation to be performed
+        %% The operation to be performed
+        + algorithmInterface()
     }
+    %% Implements a specific algorithm.
     class ConcreteStrategyA {
-        + algorithmInterface() // Implements the algorithm using Strategy A
+        %% Implements the algorithm using Strategy A
+        + algorithmInterface()
     }
     class ConcreteStrategyB {
-        + algorithmInterface() // Implements the algorithm using Strategy B
+        %% Implements the algorithm using Strategy B
+        + algorithmInterface()
     }
 
     Context o--> Strategy : uses / configured with
     ConcreteStrategyA ..|> Strategy : implements
     ConcreteStrategyB ..|> Strategy : implements
-
-    note for Context "Holds a Strategy object.\nDelegates algorithm execution."
-    note for Strategy "Common interface for all algorithms."
-    note for ConcreteStrategyA "Implements a specific algorithm."
 ```
 
 _図: Strategy パターンのクラス図_

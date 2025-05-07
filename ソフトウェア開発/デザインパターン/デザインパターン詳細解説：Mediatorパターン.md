@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Mediator パターン
 created: 2025-05-05 15:41:17
-updated: 2025-05-06 05:15:59
+updated: 2025-05-07 14:11:20
 draft: true
 tags:
   - ソフトウェア設計
@@ -74,7 +74,7 @@ Mediator パターンは、「**多数のオブジェクト（Colleague: 同僚�
 - チェックボックスの状態によって、リストボックスの選択肢が変わる。
 - テキストボックスへの入力内容に応じて、ボタンの有効/無効が切り替わる。
 
-もし、これらのウィジェットが**互いに直接参照し合い、直接メソッドを呼び出しあって**状態の変更や通知を行っていると、ウィジェット間の依存関係は**網の目状（スパゲッティ状）**になり、非常に複雑になります。
+もし、これらのウィジェットが**互いに直接参照し合い、直接メソッドを呼び出しあって**状態の変更や通知を行っていると、ウィジェット間の依存関係は**網の目状 (スパゲッティ状)** になり、非常に複雑になります。
 
 ### 1.2.2 密結合が引き起こす問題点（変更の影響、再利用性の低下）
 
@@ -131,33 +131,43 @@ Mediator パターンは、主に以下の 4 つの役割から構成されま�
 
 ```mermaid
 classDiagram
+    %% Colleagueからの通知を受け取るIF
     class Mediator {
         <<interface>>
         + notify(sender: Colleague, event: String)
     }
+    %% Colleague間の連携ロジックを実装
     class ConcreteMediator {
         - colleagueA: ConcreteColleagueA
         - colleagueB: ConcreteColleagueB
         + setColleagueA(colleague: ConcreteColleagueA)
         + setColleagueB(colleague: ConcreteColleagueB)
-        + notify(sender: Colleague, event: String) // Coordinates between colleagues
+        %% Coordinates between colleagues
+        + notify(sender: Colleague, event: String)
     }
+    %% Mediatorへの参照と通知メソッドを持つ
     class Colleague {
         <<abstract>>
          # mediator: Mediator
          + Colleague(mediator: Mediator)
          + setMediator(mediator: Mediator)
-         + changed(event: String) // Notifies the mediator
+         %% Notifies the mediator
+         + changed(event: String)
     }
+    %% 自身のイベントをMediatorに通知。\nMediatorからの指示を受ける。
     class ConcreteColleagueA {
         + ConcreteColleagueA(mediator: Mediator)
-        + someOperationA() // Might call changed("eventA")
-        + receiveNotification(message: String) // Called by Mediator
+        %% Might call changed("eventA")
+        + someOperationA()
+        %% Called by Mediator
+        + receiveNotification(message: String)
     }
     class ConcreteColleagueB {
          + ConcreteColleagueB(mediator: Mediator)
-         + someOperationB() // Might call changed("eventB")
-         + receiveAction(data: Object) // Called by Mediator
+         %% Might call changed("eventB")
+         + someOperationB()
+         %% Called by Mediator
+         + receiveAction(data: Object)
     }
 
     ConcreteMediator ..|> Mediator : implements
@@ -165,12 +175,6 @@ classDiagram
     Colleague o--> Mediator : holds reference
     ConcreteColleagueA --|> Colleague : extends
     ConcreteColleagueB --|> Colleague : extends
-
-    note for Mediator "Colleagueからの通知を受け取るIF"
-    note for ConcreteMediator "Colleague間の連携ロジックを実装"
-    note for Colleague "Mediatorへの参照と通知メソッドを持つ"
-    note for ConcreteColleagueA "自身のイベントをMediatorに通知。\nMediatorからの指示を受ける。"
-
 ```
 
 _図: Mediator パターンのクラス図_
@@ -460,15 +464,15 @@ Mediator パターンは、オブジェクト間のコミュニケーション�
 ### 6.1.2 Mediator vs Facade
 
 - **違い (目的と方向性):**
-  - **Mediator:** **多対多**のオブジェクト間の**相互作用（コミュニケーション）**をカプセル化し、`Colleague` 間の**直接的な依存をなくす**ことが目的です。コミュニケーションは `Colleague` から `Mediator` を経由して他の `Colleague` へ、という流れになります。
-  - **Facade:** **複雑なサブシステム**に対する**一方向**の**シンプルなインターフェース（窓口）**を提供することが目的です。クライアントからサブシステムへのアクセスを単純化し、内部構造を隠蔽します。サブシステム内のオブジェクト間の相互作用を管理することが主目的ではありません。
+  - **Mediator:** **多対多**のオブジェクト間の**相互作用 (コミュニケーション)** をカプセル化し、`Colleague` 間の**直接的な依存をなくす**ことが目的です。コミュニケーションは `Colleague` から `Mediator` を経由して他の `Colleague` へ、という流れになります。
+  - **Facade:** **複雑なサブシステム**に対する**一方向**の**シンプルなインターフェース**を提供することが目的です。クライアントからサブシステムへのアクセスを単純化し、内部構造を隠蔽します。サブシステム内のオブジェクト間の相互作用を管理することが主目的ではありません。
 - **見分け方:** オブジェクト間の「対話」や「連携」のルールを整理したいなら `Mediator`。複雑なシステムへの「入口」を単純化したいなら `Facade` を検討します。
 
 ### 6.1.3 Mediator vs Command
 
 - **違い (焦点):**
   - **Mediator:** オブジェクト間の**コミュニケーション**の調整・仲介に焦点を当てます。
-  - **Command:** **操作（リクエスト）**そのものをオブジェクトとしてカプセル化し、要求と実行を分離することに焦点を当てます。
+  - **Command:** **操作 (リクエスト)** そのものをオブジェクトとしてカプセル化し、要求と実行を分離することに焦点を当てます。
 - **連携:** `Mediator` が `Colleague` から受け取った通知に応じて、特定の操作を実行する必要がある場合に、その操作を `Command` オブジェクトとして生成・実行する、という組み合わせが考えられます。
 
 ## 6.2 組み合わせると効果的なパターン

@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Prototype パターン
 created: 2025-05-05 12:40:52
-updated: 2025-05-06 05:19:39
+updated: 2025-05-07 14:17:02
 draft: true
 tags:
   - ソフトウェア設計
@@ -105,7 +105,7 @@ Prototype パターンは、複製能力を持つオブジェクト（プロト�
 Prototype パターンの基本的な登場人物は非常にシンプルです。
 
 - **`Prototype`（原型インターフェース/抽象クラス）:**
-  - **役割:** 自分自身を複製するための**インターフェース（メソッド）**を宣言します。
+  - **役割:** 自分自身を複製するための**インターフェース (メソッド)** を宣言します。
   - **主な定義:** 複製を行うメソッド、一般的には `clone()` や `copy()` という名前のメソッドを宣言します。戻り値の型は通常、`Prototype` インターフェース（またはそれを実装する型）です。
 - **`ConcretePrototype`（具体的な原型）:**
   - **役割:** `Prototype` インターフェースを実装する**具体的なクラス**です。これが実際にコピーされる「原型」となります。
@@ -118,28 +118,38 @@ Prototype パターンの基本的な登場人物は非常にシンプルです�
 
 **(任意) Prototype Manager / Registry (プロトタイプ管理クラス):**
 
-- **役割:** 利用可能なプロトタイプオブジェクトを**管理（登録、検索）**するためのクラスです。必須ではありませんが、プロトタイプの種類が多い場合に便利です。
+- **役割:** 利用可能なプロトタイプオブジェクトを**管理 (登録、検索)** するためのクラスです。必須ではありませんが、プロトタイプの種類が多い場合に便利です。
 - **実装:** プロトタイプオブジェクトを名前などと関連付けて保持し（例: `Map` を使う）、クライアントからの要求に応じて対応するプロトタイプオブジェクト（またはそのコピー）を返します。
 
 ```mermaid
 classDiagram
+    %% Registryからプロトタイプを取得し、clone()を呼ぶ。
     class Client
-    class PrototypeRegistry { // Optional: Manages prototypes
+    %% プロトタイプを名前等で管理し、要求に応じてコピーを返す(任意)。
+    %% Optional: Manages prototypes
+    class PrototypeRegistry {
       + addPrototype(name: String, prototype: Prototype)
-      + getClone(name: String) : Prototype // Gets a clone from a registered prototype
+      %% Gets a clone from a registered prototype
+      + getClone(name: String) : Prototype
     }
+    %% 自分自身を複製するclone()メソッドを宣言
     class Prototype {
         <<interface>>
-        + clone() : Prototype // Method to clone itself
+        %% Method to clone itself
+        + clone() : Prototype
     }
-    class ConcretePrototype1 implements Prototype {
+    %% 具体的な複製処理(clone)を実装。Shallow vs Deep Copyに注意。
+    class ConcretePrototype1 {
         - attribute1
-        + ConcretePrototype1(source: ConcretePrototype1) // Copy constructor (alternative)
-        + clone() : Prototype // Implements cloning logic
+        %% Copy constructor (alternative)
+        + ConcretePrototype1(source: ConcretePrototype1)
+        %% Implements cloning logic
+        + clone() : Prototype
     }
-    class ConcretePrototype2 implements Prototype {
+    class ConcretePrototype2 {
         - attribute2
-        + clone() : Prototype // Implements cloning logic
+        %% Implements cloning logic
+        + clone() : Prototype
     }
 
     Client --> PrototypeRegistry : uses (optional)
@@ -147,11 +157,6 @@ classDiagram
     PrototypeRegistry o--> "*" Prototype : manages / returns clone
     ConcretePrototype1 ..|> Prototype : implements
     ConcretePrototype2 ..|> Prototype : implements
-
-    note for Prototype "自分自身を複製するclone()メソッドを宣言"
-    note for ConcretePrototype1 "具体的な複製処理(clone)を実装。\nShallow vs Deep Copyに注意。"
-    note for PrototypeRegistry "プロトタイプを名前等で管理し、\n要求に応じてコピーを返す(任意)。"
-    note for Client "Registryからプロトタイプを取得し、clone()を呼ぶ。"
 ```
 
 _図: Prototype パターンのクラス図 (プロトタイプ管理クラスを含む場合)_
@@ -332,7 +337,7 @@ Prototype パターンを適用することで、オブジェクト生成に関�
 
 オブジェクトのインスタンス化（`new` 演算子の実行やコンストラクタ内の処理）に、**顕著な時間やリソース（メモリ、CPU、外部アクセスなど）がかかる場合**、Prototype パターンは大きなメリットをもたらします。
 
-最初にコストをかけて「原型」となるオブジェクトを 1 つだけ生成しておけば、2 回目以降は比較的**低コストなコピー操作（メモリ上のデータ複製が主）**で新しいインスタンスを生成できます。これにより、アプリケーション全体のパフォーマンスを改善できる可能性があります。とくに、同じようなオブジェクトを大量に生成する必要がある場合に効果的です。
+最初にコストをかけて「原型」となるオブジェクトを 1 つだけ生成しておけば、2 回目以降は比較的**低コストなコピー操作 (メモリ上のデータ複製が主)** で新しいインスタンスを生成できます。これにより、アプリケーション全体のパフォーマンスを改善できる可能性があります。とくに、同じようなオブジェクトを大量に生成する必要がある場合に効果的です。
 
 ## 3.2 具象クラスからの独立（疎結合）
 
@@ -383,7 +388,7 @@ Java の `Cloneable` インターフェースと `Object.clone()` メソッド�
 - `Object.clone()` は `protected` であり、`CloneNotSupportedException` をスローするため、利用が煩雑です。
 - デフォルトが浅いコピーであるため、意図せず不完全なコピーを作ってしまうリスクがあります。
 
-これらの理由から、Java においては `Cloneable` や `Object.clone()` に頼らず、**コピーコンストラクタ**や**静的ファクトリメソッド（コピー用）**を独自に定義する方が、より安全で分かりやすい複製メカニズムを実装できる、という考え方が有力です。
+これらの理由から、Java においては `Cloneable` や `Object.clone()` に頼らず、**コピーコンストラクタ**や**静的ファクトリメソッド (コピー用)** を独自に定義する方が、より安全で分かりやすい複製メカニズムを実装できる、という考え方が有力です。
 
 ```java
 // コピーコンストラクタの例
@@ -480,7 +485,7 @@ Prototype パターンは、他の生成に関するパターンと比較され�
   - **アプローチ:** 主に**クラスの継承**（Factory Method）や**オブジェクトのコンポジション**（Abstract Factory）を利用して、オブジェクト生成の**プロセスや責任**をカプセル化・分離します。通常、`new` 演算子を使ってインスタンスを生成します。
   - **焦点:** 「どのクラスを生成するか」の決定を柔軟にしたり、関連オブジェクト群を整合性を持って生成したりすること。
 - **Prototype パターン:**
-  - **アプローチ:** **既存のインスタンスをコピー（`clone`）**することによって新しいインスタンスを生成します。継承階層とは独立して利用できます。
+  - **アプローチ:** **既存のインスタンスをコピー (`clone`)** することによって新しいインスタンスを生成します。継承階層とは独立して利用できます。
   - **焦点:** `new` を使わずにオブジェクトを生成すること、生成コストを削減すること、あるいはクラス名を意識せずにインスタンスを得ること。
 
 **使い分けのヒント:**

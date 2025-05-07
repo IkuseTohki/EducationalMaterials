@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：State パターン
 created: 2025-05-05 09:39:10
-updated: 2025-05-06 05:23:33
+updated: 2025-05-07 14:20:50
 draft: true
 tags:
   - ソフトウェア設計
@@ -122,27 +122,39 @@ State パターンは、主に以下の 3 つの役割から構成されます�
 
 ```mermaid
 classDiagram
+    %% Holds the current state.Delegates requests to the state object.Provides method to change state.
     class Context {
         - currentState: State
         + Context(initialState: State)
-        + setState(newState: State) // Method to change state
-        + requestA() // Delegates to currentState.handleA(this)
-        + requestB() // Delegates to currentState.handleB(this)
+        %% Method to change state
+        + setState(newState: State)
+        %% Delegates to currentState.handleA(this)
+        + requestA()
+        %% Delegates to currentState.handleB(this)
+        + requestB()
     }
+    %% Interface for encapsulating behavior associated with a particular state.
     class State {
         <<interface>>
-        + handleA(context: Context) // Operation for state
-        + handleB(context: Context) // Another operation for state
+        %% Operation for state
+        + handleA(context: Context)
+        %% Another operation for state
+        + handleB(context: Context)
     }
+    %% Implements behavior for a specific state.May handle state transitions.
     class ConcreteStateA {
-        + handleA(context: Context) // Behavior for State A, request A
-        + handleB(context: Context) // Behavior for State A, request B
-                                  // Might call: context.setState(new ConcreteStateB())
+        %% Behavior for State A, request A
+        + handleA(context: Context)
+        %% Behavior for State A, request B
+        %% Might call: context.setState(new ConcreteStateB())
+        + handleB(context: Context)
     }
     class ConcreteStateB {
-        + handleA(context: Context) // Behavior for State B, request A
-                                  // Might call: context.setState(new ConcreteStateA())
-        + handleB(context: Context) // Behavior for State B, request B
+        %% Behavior for State B, request A
+        %% Might call: context.setState(new ConcreteStateA())
+        + handleA(context: Context)
+        %% Behavior for State B, request B
+        + handleB(context: Context)
     }
 
     Context o--> State : has a / current state
@@ -150,10 +162,6 @@ classDiagram
     ConcreteStateB ..|> State : implements
     ConcreteStateA --> Context : updates state via setState()
     ConcreteStateB --> Context : updates state via setState()
-
-    note for Context "Holds the current state.\nDelegates requests to the state object.\nProvides method to change state."
-    note for State "Interface for encapsulating behavior associated with a particular state."
-    note for ConcreteStateA "Implements behavior for a specific state.\nMay handle state transitions."
 ```
 
 _図: State パターンのクラス図_
@@ -543,7 +551,7 @@ State パターンは、最初から状態変化を考慮して設計に組み�
 
 このパターンを適用することで、
 
-- **状態固有の振る舞い**を、対応する `State` クラスに**カプセル化（局所化）**できる。
+- **状態固有の振る舞い**を、対応する `State` クラスに**カプセル化 (局所化)** できる。
 - `Context` クラスから**複雑な条件分岐 (`if-else`, `switch`) を排除**し、コードをシンプルかつクリーンにできる。
 - **新しい状態の追加**が容易になり、システムの**拡張性**が高まる（OCP 準拠）。
 - **状態遷移のルール**をより明確に表現・管理しやすくなる。

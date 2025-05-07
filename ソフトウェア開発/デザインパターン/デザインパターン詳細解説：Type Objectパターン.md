@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Type Object パターン
 created: 2025-05-05 15:19:09
-updated: 2025-05-06 05:24:48
+updated: 2025-05-07 16:35:03
 draft: true
 tags:
   - ソフトウェア設計
@@ -106,40 +106,49 @@ Type Object パターンにおける主要な登場人物（役割）は以下�
   - **役割:** システム内に存在する個々の**実体**を表すオブジェクトです。（例: ゲーム内の特定のモンスター「スライム A」、「スライム B」）
   - **実装:**
     - 自身固有の状態（例: 現在の HP、位置座標）を持ちます。
-    - 自身が属する**「種類」を表す `Type Object` への参照**を持ちます。この参照は通常、インスタンス生成時に設定され、変更されません。
+    - 自身が属する **「種類」を表す `Type Object` への参照**を持ちます。この参照は通常、インスタンス生成時に設定され、変更されません。
     - 一部のデータ（例: 基本攻撃力）や振る舞い（例: デフォルトの攻撃方法）は、保持している `Type Object` から取得したり、`Type Object` に**委譲**したりします。
 - **`Type Object` (タイプオブジェクト / 型オブジェクト):**
-  - **役割:** オブジェクトの**「種類」や「分類」**を表すオブジェクトです。（例: 「スライム」という種類、「ドラゴン」という種類）
+  - **役割:** オブジェクトの **「種類」や「分類」** を表すオブジェクトです。（例: 「スライム」という種類、「ドラゴン」という種類）
   - **実装:**
     - その**種類に共通するデータ**（例: スライムの基本 HP、基本防御力、属性、名前）を保持します。
     - その**種類に共通するデフォルトの振る舞い**（メソッド）を持つこともあります。（例: スライムの基本的な攻撃パターン）
-    - 通常、Type Object 自体は、アプリケーション内でその種類ごとに**少数（あるいは 1 つ）**しか存在しません。Instance Object から共有して参照されます。
+    - 通常、Type Object 自体は、アプリケーション内でその種類ごとに**少数 (あるいは 1 つ)** しか存在しません。Instance Object から共有して参照されます。
 - **(任意) `Type Object Registry/Manager` (タイプオブジェクト管理クラス):**
-  - **役割:** 利用可能な `Type Object` を**管理（登録、検索、生成）**するクラスです。必須ではありませんが、Type Object の種類が多い場合や、外部データから動的に生成する場合に便利です。
+  - **役割:** 利用可能な `Type Object` を**管理 (登録、検索、生成)** するクラスです。必須ではありませんが、Type Object の種類が多い場合や、外部データから動的に生成する場合に便利です。
   - **実装:** `Type Object` を名前や ID と関連付けて保持し（例: `Map` を使用）、要求に応じて適切な `Type Object` を返します。
 
 ```mermaid
 classDiagram
+    %% 個々の実体。固有データとTypeへの参照を持つ。一部のデータ/振る舞いをTypeに委譲。
     class InstanceObject {
-        - type: TypeObject // Reference to the Type Object
-        - instanceSpecificData // e.g., current HP, position
+        %% Reference to the Type Object
+        - type: TypeObject
+        %% e.g., current HP, position
+        - instanceSpecificData
         + InstanceObject(type: TypeObject)
-        + getBaseAttack(): int // Delegates to type.getBaseAttack()
-        + performAttack(target: InstanceObject) // Might delegate to type.performAttackBehavior()
+        %% Delegates to type.getBaseAttack()
+        + getBaseAttack(): int
+        %% Might delegate to type.performAttackBehavior()
+        + performAttack(target: InstanceObject)
         + getInstanceData()
     }
+    %% オブジェクトの「種類」を表す。種類共通のデータ/振る舞いを持つ。
     class TypeObject {
         - name: String
         - baseHp: int
         - baseAttack: int
-        // Other type-specific data
+        %% Other type-specific data
         + TypeObject(name, hp, attack, ...)
         + getName(): String
         + getBaseHp(): int
         + getBaseAttack(): int
-        + performAttackBehavior(attacker: InstanceObject, target: InstanceObject)* // Optional shared behavior
+        %% Optional shared behavior
+        + performAttackBehavior(attacker: InstanceObject, target: InstanceObject)*
     }
-    class TypeObjectRegistry { // Optional Manager
+    %% TypeObjectを管理する(任意)。
+    %% Optional Manager
+    class TypeObjectRegistry {
         - types: Map~String, TypeObject~
         + registerType(name: String, type: TypeObject)
         + getType(name: String): TypeObject
@@ -152,11 +161,6 @@ classDiagram
     Client --> InstanceObject : creates / uses
     TypeObjectRegistry --> TypeObject : creates / manages
     InstanceObject o--> TypeObject : has a / references type
-
-    note for InstanceObject "個々の実体。\n固有データとTypeへの参照を持つ。\n一部のデータ/振る舞いをTypeに委譲。"
-    note for TypeObject "オブジェクトの「種類」を表す。\n種類共通のデータ/振る舞いを持つ。"
-    note for TypeObjectRegistry "TypeObjectを管理する(任意)。"
-
 ```
 
 _図: Type Object パターンのクラス図 (Registry を含む場合)_
@@ -472,19 +476,19 @@ Type Object パターンは、オブジェクトの「型」情報をデータ�
 ### 6.1.2 Type Object vs State パターン
 
 - **類似点:** どちらもオブジェクトの振る舞いを変更するメカニズムを提供します。`Instance Object` が `Type Object` を参照する関係は、`Context` が `State` を参照する関係に似ています。
-- **違い:** 主な目的が異なります。State パターンはオブジェクトの**内部状態**に応じて**振る舞い**を切り替え、**状態遷移**を管理することに焦点を当てます。Type Object パターンはオブジェクトの**「種類」**を定義し、種類**共通のデータやデフォルトの振る舞い**を提供することに焦点を当てます。`Type Object` は通常、不変で、インスタンス間で共有されますが、`State` オブジェクトは `Context` ごとに変わる可能性があります。
+- **違い:** 主な目的が異なります。State パターンはオブジェクトの**内部状態**に応じて**振る舞い**を切り替え、**状態遷移**を管理することに焦点を当てます。Type Object パターンはオブジェクトの「**種類**」を定義し、種類**共通のデータやデフォルトの振る舞い**を提供することに焦点を当てます。`Type Object` は通常、不変で、インスタンス間で共有されますが、`State` オブジェクトは `Context` ごとに変わる可能性があります。
 - **連携:** オブジェクトの状態遷移が、そのオブジェクトの「種類」（Type Object）によって異なる場合など、両者を組み合わせることも考えられます。
 
 ### 6.1.3 Type Object vs Strategy パターン
 
 - **類似点:** `Instance Object` が振る舞いの一部を `Type Object` に委譲する点は、`Context` が `Strategy` に委譲する点と似ています。
-- **違い:** Strategy パターンは**アルゴリズム（振る舞い）**そのものを交換可能にすることが主目的です。Type Object パターンは**型の定義（データとデフォルトの振る舞い）**をオブジェクト化することが主目的です。
+- **違い:** Strategy パターンは**アルゴリズム (振る舞い)** そのものを交換可能にすることが主目的です。Type Object パターンは**型の定義 (データとデフォルトの振る舞い)** をオブジェクト化することが主目的です。
 - **連携:** Type Object が種類ごとのデフォルトの「戦略（Strategy）」を保持し、`Instance Object` がそれを利用する、という形で連携できます。
 
 ### 6.1.4 Type Object vs Flyweight パターン
 
 - **類似点:** どちらもオブジェクト間で情報を共有することで、効率化（メモリ削減など）を図ることがあります。
-- **違い:** Flyweight は多数のオブジェクト間で**共有可能な状態（内部状態）**を分離・共有することに焦点を当てます。Type Object は**型の定義（種類共通のデータや振る舞い）**を共有することに焦点を当てます。
+- **違い:** Flyweight は多数のオブジェクト間で**共有可能な状態 (内部状態)** を分離・共有することに焦点を当てます。Type Object は**型の定義 (種類共通のデータや振る舞い)** を共有することに焦点を当てます。
 - **連携:** `Type Object` 自体を Flyweight として扱い、種類ごとに唯一のインスタンスを共有することは非常に一般的です（Singleton や Registry を使う）。
 
 ## 6.2 組み合わせると効果的なパターン
@@ -560,7 +564,7 @@ Type Object パターンは、システムの初期設計段階から採用さ�
 
 # 8. まとめ ～ Type Object パターンの本質～
 
-**Type Object パターン**は、オブジェクトの**「種類（Type）」に関する情報や振る舞いを、クラス定義から分離し、専用のオブジェクト（`Type Object`）として表現・管理する**デザインパターンです。
+**Type Object パターン**は、オブジェクトの **「種類（Type）」に関する情報や振る舞いを、クラス定義から分離し、専用のオブジェクト（`Type Object`）として表現・管理する**デザインパターンです。
 
 このパターンを適用することで、
 

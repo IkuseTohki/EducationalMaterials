@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Proxy パターン
 created: 2025-05-05 09:21:32
-updated: 2025-05-06 05:21:15
+updated: 2025-05-07 14:18:00
 draft: true
 tags:
   - ソフトウェア設計
@@ -118,31 +118,37 @@ Proxy パターンは、主に以下の 3 つ（＋クライアント）の役�
 
 ```mermaid
 classDiagram
+    %% Subjectインターフェース経由でProxyを利用。Proxyの存在を意識しないことが多い。
     class Client
+    %% 本人と代理人の共通インターフェース
     class Subject {
         <<interface>>
-        + request() // Operation defined by the interface
+        %% Operation defined by the interface
+        + request()
     }
+    %% 実際の処理を行う『本人』
     class RealSubject {
-        + request() // The actual implementation
+        %% The actual implementation
+        + request()
     }
+    %% 『代理人』。本人と同じIFを持ち、アクセス制御や追加処理を行い、本人に委譲する。
     class Proxy {
-        - realSubject: RealSubject // Reference to the real object
-        + Proxy() // Constructor might create RealSubject or not
-        + request() // The proxy handles the request
-        # preRequestAction() // Optional: actions before delegation
-        # postRequestAction() // Optional: actions after delegation
+        %% Reference to the real object
+        - realSubject: RealSubject
+        %% Constructor might create RealSubject or not
+        + Proxy()
+        %% The proxy handles the request
+        + request()
+        %% Optional: actions before delegation
+        # preRequestAction()
+        %% Optional: actions after delegation
+        # postRequestAction()
     }
 
     Client --> Subject : uses
     RealSubject ..|> Subject : implements
     Proxy ..|> Subject : implements
     Proxy o--> RealSubject : holds / manages access to
-
-    note for Subject "本人と代理人の共通インターフェース"
-    note for RealSubject "実際の処理を行う『本人』"
-    note for Proxy "『代理人』。本人と同じIFを持ち、\nアクセス制御や追加処理を行い、本人に委譲する。"
-    note for Client "Subjectインターフェース経由でProxyを利用。\nProxyの存在を意識しないことが多い。"
 ```
 
 _図: Proxy パターンのクラス図_

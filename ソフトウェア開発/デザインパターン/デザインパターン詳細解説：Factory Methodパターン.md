@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Factory Method パターン
 created: 2025-05-05 10:41:58
-updated: 2025-05-06 05:12:58
+updated: 2025-05-07 14:03:19
 draft: true
 tags:
   - ソフトウェア設計
@@ -102,7 +102,7 @@ Factory Method パターンは、オブジェクト生成の責任をサブク�
 Factory Method パターンは、主に以下の 4 つの役割（クラスまたはインターフェース）から構成されます。
 
 - **`Product`（製品インターフェース）:**
-  - **役割:** Factory Method が生成するオブジェクトの**共通の型（インターフェースまたは抽象クラス）**を定義します。`Creator` はこの `Product` 型を通じて生成されたオブジェクトを利用します。
+  - **役割:** Factory Method が生成するオブジェクトの**共通の型 (インターフェースまたは抽象クラス)** を定義します。`Creator` はこの `Product` 型を通じて生成されたオブジェクトを利用します。
   - **定義:** 生成されるオブジェクトが共通して持つべきメソッドを宣言します。
 - **`ConcreteProduct`（具体的な製品）:**
   - **役割:** `Product` インターフェースを**実装する具体的なクラス**です。Factory Method によって実際に生成されるオブジェクトです。
@@ -118,6 +118,7 @@ Factory Method パターンは、主に以下の 4 つの役割（クラスま�
 
 ```mermaid
 classDiagram
+    %% 生成されるオブジェクトの共通インターフェース。
     class Product {
         <<interface>>
         + operation()
@@ -128,17 +129,23 @@ classDiagram
     class ConcreteProductB {
         + operation()
     }
+    %% factoryMethod()を宣言。Productを利用する処理も持つことが多い。
     class Creator {
         <<abstract>>
-        # factoryMethod(): Product*  // Factory Method (abstract or default impl)
-        + someOperation() // Uses the product created by factoryMethod
-                        // e.g., { Product p = factoryMethod(); p.operation(); }
+        %% Factory Method (abstract or default impl)
+        # factoryMethod(): Product*
+        %% Uses the product created by factoryMethod
+        %% e.g., { Product p = factoryMethod(); p.operation(); }
+        + someOperation()
     }
+    %% factoryMethod()を実装し、具体的な製品Aを生成する責任を持つ。
     class ConcreteCreatorA {
-        + factoryMethod(): Product // Overrides to return new ConcreteProductA()
+        %% Overrides to return new ConcreteProductA()
+        + factoryMethod(): Product
     }
     class ConcreteCreatorB {
-        + factoryMethod(): Product // Overrides to return new ConcreteProductB()
+        %% Overrides to return new ConcreteProductB()
+        + factoryMethod(): Product
     }
 
     ConcreteProductA ..|> Product : implements
@@ -148,17 +155,13 @@ classDiagram
     ConcreteCreatorB --|> Creator : extends
     ConcreteCreatorA ..> ConcreteProductA : creates
     ConcreteCreatorB ..> ConcreteProductB : creates
-
-    note for Creator "factoryMethod()を宣言。Productを利用する処理も持つことが多い。"
-    note for ConcreteCreatorA "factoryMethod()を実装し、具体的な製品Aを生成する責任を持つ。"
-    note for Product "生成されるオブジェクトの共通インターフェース。"
 ```
 
 _図: Factory Method パターンのクラス図_
 
 ## 2.2 実装のポイント：生成の委譲とインターフェース依存
 
-- **生成責任の委譲:** このパターンの核心は、`new ConcreteProduct()` という**具体的なクラスのインスタンス化を行う責任**を、`Creator` から `ConcreteCreator` の `factoryMethod()` へと**委譲（遅延）**する点にあります。
+- **生成責任の委譲:** このパターンの核心は、`new ConcreteProduct()` という**具体的なクラスのインスタンス化を行う責任**を、`Creator` から `ConcreteCreator` の `factoryMethod()` へと**委譲 (遅延)** する点にあります。
 - **インターフェースへの依存:** `Creator` クラス（および多くの場合クライアントも）は、具体的な `ConcreteProduct` クラスを知る必要がなく、抽象的な `Product` **インターフェースにのみ依存**します。これにより、`Creator` のコードを変更することなく、生成される `Product` の種類を `ConcreteCreator` を切り替えることで変更できます。
 - **`factoryMethod` の実装:**
   - もっとも一般的なのは、`Creator` で `factoryMethod` を `abstract` とし、`ConcreteCreator` でオーバーライドして実装する方法です。
@@ -279,7 +282,7 @@ Factory Method パターンを適用することで、オブジェクト生成�
 - `Creator` は、具体的な `ConcreteProduct` クラスの名前を知る必要がなく、抽象的な `Product` **インターフェースにのみ依存**します。
 - どの `ConcreteProduct` を生成するかの決定は、`ConcreteCreator` の `factoryMethod` 内にカプセル化されます。
 
-これにより、`Creator` と `ConcreteProduct` の間の**結合度が低下（疎結合）**し、互いに独立して変更・拡張することが容易になります。たとえば、`ConcreteProduct` の実装詳細が変更されても、`Product` インターフェースが変わらなければ、`Creator` 側のコードは影響を受けません。
+これにより、`Creator` と `ConcreteProduct` の間の**結合度が低下 (疎結合)** し、互いに独立して変更・拡張することが容易になります。たとえば、`ConcreteProduct` の実装詳細が変更されても、`Product` インターフェースが変わらなければ、`Creator` 側のコードは影響を受けません。
 
 ## 3.2 拡張性の向上（OCP 準拠）
 
@@ -316,10 +319,10 @@ Factory Method パターンはオブジェクト生成に柔軟性をもたら�
 
 Factory Method パターンを導入する際のもっとも顕著なトレードオフは、**クラス階層が深くなり、システム全体のクラス数が増加する**傾向があることです。
 
-- 新しい種類の製品 (`ConcreteProduct`) を追加するたびに、それに対応する**`ConcreteCreator` サブクラスも通常はセットで作成**する必要があります。
+- 新しい種類の製品 (`ConcreteProduct`) を追加するたびに、それに対応する`ConcreteCreator`サブクラスも通常はセットで作成する必要があります。
 - これにより、`Creator` を中心としたクラス階層が形成され、管理すべきクラスの数が増えます。
 
-もし、生成するオブジェクトの種類が少なく、将来的に増える可能性も低い、あるいは生成ロジックが非常に単純な場合にまで Factory Method パターンを適用すると、**過剰設計**となり、かえってシステムの構造を**不必要に複雑にしてしまう**可能性があります。シンプルな `if-else` や `switch` による生成の方が、結果的に分かりやすい場合もあります。
+もし、生成するオブジェクトの種類が少なく、将来的に増える可能性も低い、あるいは生成ロジックが非常に単純な場合にまで Factory Method パターンを適用すると、過剰設計となり、かえってシステムの構造を不必要に複雑にしてしまう可能性があります。シンプルな `if-else` や `switch` による生成の方が、結果的に分かりやすい場合もあります。
 
 ## 4.2 サブクラス化の必要性
 

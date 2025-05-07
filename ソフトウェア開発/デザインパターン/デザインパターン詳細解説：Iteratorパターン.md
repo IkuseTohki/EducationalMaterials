@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Iterator パターン
 created: 2025-05-04 15:47:57
-updated: 2025-05-06 05:14:45
+updated: 2025-05-07 14:08:11
 draft: true
 tags:
   - ソフトウェア設計
@@ -132,48 +132,50 @@ Iterator パターンは、主に 4 つの役割（インターフェースま�
 ```mermaid
 classDiagram
     class Client
+    %% Iteratorを生成するメソッドを定義
     class Aggregate {
         <<interface>>
         + createIterator() : Iterator
     }
+    %% 実際のコレクション。対応するIteratorを生成。
     class ConcreteAggregate {
         # elements
-        + createIterator() : Iterator // Returns a ConcreteIterator for this Aggregate
+        %% Returns a ConcreteIterator for this Aggregate
+        + createIterator() : Iterator
     }
+    %% 要素へのアクセス方法(hasNext, next)を定義
     class Iterator {
         <<interface>>
         + hasNext() : boolean
         + next() : Object
-        + remove()* // Optional
+        %% Optional
+        + remove()*
     }
+    %% 具体的な走査ロジックと現在位置を管理
     class ConcreteIterator {
         - aggregate: ConcreteAggregate
         - currentPosition
         + ConcreteIterator(aggregate: ConcreteAggregate)
         + hasNext() : boolean
         + next() : Object
-        + remove()* // Optional
+        %% Optional
+        + remove()*
     }
 
+    ConcreteAggregate ..|> Aggregate : implements
     Client --> Aggregate : uses
     Client --> Iterator : uses
     Aggregate <.. Client : creates iterator via createIterator()
-    ConcreteAggregate ..|> Aggregate : implements
     ConcreteAggregate --> ConcreteIterator : creates
     ConcreteIterator ..|> Iterator : implements
     ConcreteIterator --> ConcreteAggregate : iterates over
-
-    note for Iterator "要素へのアクセス方法(hasNext, next)を定義"
-    note for Aggregate "Iteratorを生成するメソッドを定義"
-    note for ConcreteAggregate "実際のコレクション。対応するIteratorを生成。"
-    note for ConcreteIterator "具体的な走査ロジックと現在位置を管理"
 ```
 
 _図: Iterator パターンのクラス図_
 
 ## 2.2 実装のポイント：走査ロジックの分離と統一インターフェース
 
-- **責務の分離:** このパターンの核心は、**要素を保持・管理する責務（Aggregate）**と、**要素を順番に走査する責務（Iterator）**を明確に分離することにあります。これにより、コレクション本体のクラスは要素管理に集中でき、走査方法が複雑になっても本体クラスへの影響を抑えられます。
+- **責務の分離:** このパターンの核心は、**要素を保持・管理する責務 (Aggregate)** と、**要素を順番に走査する責務 (Iterator)** を明確に分離することにあります。これにより、コレクション本体のクラスは要素管理に集中でき、走査方法が複雑になっても本体クラスへの影響を抑えられます。
 - **統一インターフェース:** クライアントは、具体的なコレクションクラス (`ConcreteAggregate`) や具体的なイテレータクラス (`ConcreteIterator`) を意識する必要がなく、抽象的な `Aggregate` インターフェースと `Iterator` インターフェースのみを通じて操作を行います。これにより、クライアントコードとコレクション実装の間の**結合度が低下**します。
 - **イテレータの生成:** `ConcreteAggregate` が自身に対応する `ConcreteIterator` を生成する責務を持ちます (`createIterator()` メソッド)。これは **Factory Method パターン**の一種と見なすこともできます。
 - **内部イテレータと外部イテレータ:**
@@ -373,11 +375,11 @@ Iterator がコレクションの要素を走査している最中に、**別の
 
 ## 4.3 単純なケースでの冗長性
 
-コレクションが非常に単純で（例: 内部が単純な配列で、サイズも小さい）、かつその内部構造が変更される可能性が低い場合、Iterator パターンを厳密に導入することが**過剰設計**となり、コードが冗長に感じられる可能性もあります。
+コレクションが非常に単純で（例: 内部が単純な配列で、サイズも小さい）、かつその内部構造が変更される可能性が低い場合、Iterator パターンを厳密に導入することが過剰設計となり、コードが冗長に感じられる可能性もあります。
 
 たとえば、メソッド内部だけで使われる一時的な小さな配列に対して、わざわざ `Iterator` クラスを作成するのは、多くの場合やりすぎでしょう。通常の `for` ループなどで直接アクセスする方がシンプルで分かりやすい場合もあります。
 
-パターンの適用は、常に**費用対効果（導入によるメリットと、複雑さの増加というコスト）**を考慮して判断すべきです。
+パターンの適用は、常に費用対効果 (導入によるメリットと、複雑さの増加というコスト) を考慮して判断すべきです。
 
 ## 4.4 パフォーマンスへの影響（通常は軽微）
 
@@ -452,7 +454,7 @@ Iterator パターン自体は非常にユニークな目的（コレクショ�
 
 - **Visitor パターン:**
   - **関連性:** Visitor パターンも、データ構造（とくに Composite パターンで構築されたような複雑な構造）の要素を巡回（トラバース）し、各要素に対して操作を行う点で似ています。
-  - **違い:** Iterator は要素への**アクセス方法**を抽象化・提供することに主眼があるのに対し、Visitor は要素に対する**操作（処理）**を分離し、新しい操作を追加しやすくすることに主眼があります。Iterator は「どうやって次に進むか」を提供し、Visitor は「各要素で何をするか」を定義します。しばしば、Visitor パターンは内部で Iterator（またはそれに類する走査メカニズム）を利用します。
+  - **違い:** Iterator は要素への**アクセス方法**を抽象化・提供することに主眼があるのに対し、Visitor は要素に対する**操作 (処理)** を分離し、新しい操作を追加しやすくすることに主眼があります。Iterator は「どうやって次に進むか」を提供し、Visitor は「各要素で何をするか」を定義します。しばしば、Visitor パターンは内部で Iterator（またはそれに類する走査メカニズム）を利用します。
 - **(内部イテレータと) Command パターン:**
   - **関連性:** 内部イテレータのように、各要素に対して特定の処理（コマンド）を実行させたい場合があります。
   - **違い:** Iterator はあくまで要素への**アクセス手段**を提供するのに対し、Command は**操作（アクション）そのもの**をオブジェクトとしてカプセル化します。内部イテレータのコールバック処理が複雑になる場合に、その処理を Command オブジェクトとして渡す、といった組み合わせは考えられます。

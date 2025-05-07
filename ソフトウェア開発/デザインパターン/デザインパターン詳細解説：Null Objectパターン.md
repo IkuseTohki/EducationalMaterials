@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Null Object パターン
 created: 2025-05-05 13:35:25
-updated: 2025-05-06 05:18:00
+updated: 2025-05-07 14:13:43
 draft: true
 tags:
   - ソフトウェア設計
@@ -137,33 +137,37 @@ Null Object パターンの主要な登場人物は以下の通りです。
 
 ```mermaid
 classDiagram
+    %% AbstractObjectを利用。中身がRealかNullかを意識しない。
     class Client {
         - service: AbstractObject
         + Client(service: AbstractObject)
-        + doSomething() // Calls service.operation() without null check
+        %% Calls service.operation() without null check
+        + doSomething()
     }
+    %% 共通インターフェース
     class AbstractObject {
         <<interface>>
         + operation()
         + query() : ResultType
     }
+    %% 実際の処理を行うオブジェクト
     class RealObject {
-        + operation() // Performs the actual operation
-        + query() : ResultType // Returns actual result
+        %% Performs the actual operation
+        + operation()
+        %% Returns actual result
+        + query() : ResultType
     }
+    %% 何もしない、またはデフォルト値を返す『特別なケース』を表すオブジェクト
     class NullObject {
-        + operation() // Does nothing (or logs a warning)
-        + query() : ResultType // Returns a default value (e.g., empty string, 0, false, empty list)
+        %% Does nothing (or logs a warning)
+        + operation()
+        %% Returns a default value (e.g., empty string, 0, false, empty list)
+        + query() : ResultType
     }
 
     Client o--> AbstractObject : uses
     RealObject ..|> AbstractObject : implements
     NullObject ..|> AbstractObject : implements
-
-    note for AbstractObject "共通インターフェース"
-    note for RealObject "実際の処理を行うオブジェクト"
-    note for NullObject "何もしない、またはデフォルト値を返す\n『特別なケース』を表すオブジェクト"
-    note for Client "AbstractObjectを利用。\n中身がRealかNullかを意識しない。"
 ```
 
 _図: Null Object パターンのクラス図_
@@ -427,7 +431,7 @@ Null Object パターンの基本的な考え方は、クライアントが `Rea
 
 ## 5.3 デフォルト値の選択
 
-`NullObject` が戻り値を持つメソッドを実装する場合、返す**デフォルト値**は慎重に選択する必要があります。その値は、クライアントが受け取っても**安全であり、かつ意味のある「デフォルト」**でなければなりません。
+`NullObject` が戻り値を持つメソッドを実装する場合、返す**デフォルト値**は慎重に選択する必要があります。その値は、クライアントが受け取っても**安全であり、かつ意味のある「デフォルト」** でなければなりません。
 
 - **空のコレクション:** リストを返すメソッドなら、`null` ではなく空のリスト (`Collections.emptyList()` など）を返します。
 - **数値:** 合計値などを返すなら `0`、個数なら `0`、割引率なら `0` など、文脈に応じた自然なデフォルト値を選びます。

@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Template Method パターン
 created: 2025-05-04 15:29:15
-updated: 2025-05-06 04:53:47
+updated: 2025-05-07 14:23:57
 draft: true
 tags:
   - ソフトウェア設計
@@ -84,13 +84,13 @@ Template Method パターンは、「**ある処理（アルゴリズム）の�
 
 ### 1.2.2 処理の「骨組み」は変えずに、一部だけカスタマイズしたい
 
-複数の処理バリエーションがある場合でも、「基本的な手順」や「処理の順序」といった**アルゴリズムの骨組み（構造）**は固定したい、あるいは共通化したい、という要求があります。たとえば、「特定の認証プロセスは必ずこの順序で行い、途中のステップを省略させたくない」といったケースです。
+複数の処理バリエーションがある場合でも、「基本的な手順」や「処理の順序」といった**アルゴリズムの骨組み (構造)** は固定したい、あるいは共通化したい、という要求があります。たとえば、「特定の認証プロセスは必ずこの順序で行い、途中のステップを省略させたくない」といったケースです。
 
 しかし、その骨組みの中の**特定のステップ**（たとえば、具体的な認証方法や、データの検証方法）だけは、サブクラスごと、あるいは状況に応じて変更・カスタマイズ可能にしたい、というニーズも同時に存在します。
 
 ### 1.2.3 フレームワークのような共通処理を提供したい
 
-ライブラリやフレームワークを開発する際には、利用者が共通して行うであろう処理の流れ（たとえば、Web リクエストの受付からレスポンス返却までのライフサイクル、テスト実行前のセットアップと実行後の後片付けなど）を提供しつつ、利用者が**独自の処理を組み込める「拡張点」**を用意する必要があります。
+ライブラリやフレームワークを開発する際には、利用者が共通して行うであろう処理の流れ（たとえば、Web リクエストの受付からレスポンス返却までのライフサイクル、テスト実行前のセットアップと実行後の後片付けなど）を提供しつつ、利用者が**独自の処理を組み込める「拡張点」** を用意する必要があります。
 
 Template Method パターンは、このようなフレームワーク的な構造、つまり「大枠は決まっているが、詳細は利用者が決める」という仕組みをエレガントに実現する手段を提供します。
 
@@ -133,30 +133,42 @@ Template Method パターンは、主に以下の 2 種類の登場人物（ク�
 
 ```mermaid
 classDiagram
+    %% テンプレートメソッド(final)で骨組みを定義
+    %% 抽象メソッド(abstract)でサブクラス実装を強制
+    %% フックメソッドでカスタマイズを許可
+    %% 具象メソッドで共通処理を提供
     class AbstractClass {
         +final templateMethod()$
-        #operationCommon1() // Concrete Method
-        #abstract primitiveOperation1()* // Abstract Method
-        #abstract primitiveOperation2()* // Abstract Method
-        #hookOperation1() // Hook Method (with default implementation)
-        #operationCommon2() // Concrete Method
+        %% Concrete Method
+        #operationCommon1()
+        %% Abstract Method
+        #abstract primitiveOperation1()*
+        %% Abstract Method
+        #abstract primitiveOperation2()*
+        %% Hook Method (with default implementation)
+        #hookOperation1()
+        %% Concrete Method
+        #operationCommon2()
     }
+    %% 抽象メソッドを実装し、必要ならフックをオーバーライド
     class ConcreteClassA {
-        #primitiveOperation1() // Must implement
-        #primitiveOperation2() // Must implement
-        #hookOperation1() // Optionally override
+        %% Must implement
+        #primitiveOperation1()
+        %% Must implement
+        #primitiveOperation2()
+        %% Optionally override
+        #hookOperation1()
     }
      class ConcreteClassB {
-        #primitiveOperation1() // Must implement
-        #primitiveOperation2() // Must implement
-        // hookOperation1 is not overridden, uses default
+        %% Must implement
+        #primitiveOperation1()
+        %% Must implement
+        #primitiveOperation2()
+        %% hookOperation1 is not overridden, uses default
     }
 
     ConcreteClassA --|> AbstractClass : extends
     ConcreteClassB --|> AbstractClass : extends
-
-    note for AbstractClass "テンプレートメソッド(final)で骨組みを定義\n抽象メソッド(abstract)でサブクラス実装を強制\nフックメソッドでカスタマイズを許可\n具象メソッドで共通処理を提供"
-    note for ConcreteClassA "抽象メソッドを実装し、必要ならフックをオーバーライド"
 ```
 
 _図: Template Method パターンのクラス図（メソッドの種類を明記）_
@@ -440,12 +452,12 @@ Template Method パターンは、他のデザインパターンと比較され�
 - **Template Method:**
 
   - **実現方法:** **継承**を利用します。
-  - **目的:** アルゴリズムの**骨組み（テンプレート）**をスーパークラスで固定し、**部分的なステップ**の実装をサブクラスに委ねます。
+  - **目的:** アルゴリズムの**骨組み (テンプレート)** をスーパークラスで固定し、**部分的なステップ**の実装をサブクラスに委ねます。
   - **柔軟性:** アルゴリズムの骨組み自体は変更できません。変更できるのは、定義されたステップの実装のみです。
   - **使い分け:** アルゴリズムの構造が安定しており、部分的な実装の違いを吸収したい場合に適しています。フレームワーク的な構造に向いています。
 
 - **Strategy:**
-  - **実現方法:** **委譲（コンポジション）**を利用します。
+  - **実現方法:** **委譲 (コンポジション)** を利用します。
   - **目的:** アルゴリズム**全体**を独立したオブジェクト（戦略）としてカプセル化し、それらを丸ごと交換可能にします。
   - **柔軟性:** 実行時にアルゴリズム全体を自由に切り替えられます。継承関係に縛られません。
   - **使い分け:** アルゴリズム全体を柔軟に入れ替えたい場合や、継承を使いたくない場合に適しています。一般的に Strategy の方が柔軟性は高いとされます。
@@ -501,7 +513,7 @@ Template Method パターンは、最初から設計に組み込むだけでな�
 
 1. **対象メソッドの特定:** 複数のクラスに存在する、処理手順が類似しているメソッドを特定します。
 2. **共通スーパークラスの準備:** 対象となるクラス群に共通のスーパークラスが存在しない場合は、**スーパークラスの抽出 (Extract Superclass)** リファクタリングを行い、共通の親クラスを作成します。（すでにあればそれを利用します）
-3. **メソッドのプルアップ:** 特定した類似メソッドを、まずはそのままの形でスーパークラスに**移動（プルアップ）**します。この時点では、サブクラス固有のロジックも含まれたままかもしれません。（移動先のメソッドは `protected` にすることが多いです）
+3. **メソッドのプルアップ:** 特定した類似メソッドを、まずはそのままの形でスーパークラスに**移動 (プルアップ)** します。この時点では、サブクラス固有のロジックも含まれたままかもしれません。（移動先のメソッドは `protected` にすることが多いです）
 4. **骨組みと可変部分の分離:** スーパークラスに移動したメソッド（これがテンプレートメソッドの元になります）の内部を分析し、すべてのサブクラスで**共通の処理ステップ**と、サブクラスごとに**異なる処理ステップ**を明確に区別します。
 5. **抽象メソッド/フックメソッドの宣言:** サブクラスごとに異なるステップに対応する部分を、スーパークラスで**抽象メソッド (abstract method)** または**フックメソッド (hook method)** として宣言します。
 6. **テンプレートメソッドの修正:** スーパークラスのテンプレートメソッド本体を修正し、ステップ 4 で分離した共通処理と、ステップ 5 で宣言した抽象メソッド/フックメソッドを適切な順序で呼び出すように書き換えます。テンプレートメソッドには `final` を付けることを検討します。

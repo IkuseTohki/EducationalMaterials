@@ -1,7 +1,7 @@
 ---
 title: デザインパターン詳細解説：Facade パターン
 created: 2025-05-05 02:52:38
-updated: 2025-05-06 05:11:18
+updated: 2025-05-07 13:52:30
 draft: true
 tags:
   - ソフトウェア設計
@@ -114,15 +114,21 @@ Facade パターンの主要な登場人物は以下の通りです。
 
 ```mermaid
 classDiagram
+    %% FacadeのシンプルなAPIのみを利用。\nサブシステムの複雑さを知らない。
     class Client
+    %% シンプルなAPIを提供し、\n内部でサブシステムを呼び出す窓口
     class Facade {
         - subsystemA: SubsystemClassA
         - subsystemB: SubsystemClassB
         # other subsystems...
-        + Facade() // Constructor might initialize subsystems
-        + simpleOperation1() // High-level interface method
-        + simpleOperation2() // Another high-level interface method
+        %% Constructor might initialize subsystems
+        + Facade()
+        %% High-level interface method
+        + simpleOperation1()
+        %% Another high-level interface method
+        + simpleOperation2()
     }
+    %% 実際の機能を持つクラス群の一つ。\nFacadeのことは知らない。
     class SubsystemClassA {
         + complexOperationA1()
         + complexOperationA2()
@@ -140,10 +146,6 @@ classDiagram
     Facade --> SubsystemClassB : uses / delegates to
     Facade --> SubsystemClassC : uses / delegates to
     ' Facade uses other subsystems...
-
-    note for Facade "シンプルなAPIを提供し、\n内部でサブシステムを呼び出す窓口"
-    note for SubsystemClassA "実際の機能を持つクラス群の一つ。\nFacadeのことは知らない。"
-    note for Client "FacadeのシンプルなAPIのみを利用。\nサブシステムの複雑さを知らない。"
 ```
 
 _図: Facade パターンのクラス図_
@@ -292,13 +294,13 @@ Facade パターンは、クライアントとサブシステムの間の**結�
 
 ## 3.3 サブシステムの内部構造の隠蔽（カプセル化）
 
-Facade は、サブシステムの内部構造をクライアントから**隠蔽（カプセル化）**する役割を果たします。クライアントは、サブシステムがどのように構成され、どのように動作しているかの詳細を知る必要がありません。
+Facade は、サブシステムの内部構造をクライアントから**隠蔽 (カプセル化)** する役割を果たします。クライアントは、サブシステムがどのように構成され、どのように動作しているかの詳細を知る必要がありません。
 
 これにより、サブシステムの開発者は、クライアントへの影響を過度に心配することなく、**内部実装の改善やリファクタリングを自由に行いやすく**なります。インターフェース（Facade）を安定させておけば、内部は柔軟に変更できるのです。
 
 ## 3.4 システムの階層化（レイヤリング）の促進
 
-ソフトウェアシステム全体を、いくつかの**レイヤー（層）**に分割して設計する場合、Facade パターンはレイヤー間のインターフェースとして非常に有効です。
+ソフトウェアシステム全体を、いくつかの**レイヤー (層)** に分割して設計する場合、Facade パターンはレイヤー間のインターフェースとして非常に有効です。
 
 各レイヤー（例: プレゼンテーション層、ビジネスロジック層、データアクセス層）が、自身の機能を利用するための Facade を提供することで、**レイヤー間の依存関係を Facade に限定**できます。これにより、各レイヤーの独立性が高まり、システム全体の構造が整理され、見通しが良くなります。あるレイヤーの内部変更が、他のレイヤーに波及しにくくなります。
 
@@ -505,7 +507,7 @@ Facade パターンは、システムの初期設計段階から導入される�
 3. **サブシステムへの参照の追加:**
    - `Facade` クラス内に、連携する必要のあるサブシステムクラスへの参照（フィールド）を追加します。これらのサブシステムインスタンスをどのように取得するか（内部生成か注入か）も決定します。（DI が推奨されます）
 4. **連携ロジックの移動:**
-   - クライアントコード内に分散していた、サブシステムとの複雑な連携ロジック（メソッド呼び出しの順序、データの準備など）を、**`Facade` クラスの対応するメソッド内に移動（またはコピー）**します。
+   - クライアントコード内に分散していた、サブシステムとの複雑な連携ロジック（メソッド呼び出しの順序、データの準備など）を、**`Facade` クラスの対応するメソッド内に移動 (またはコピー)** します。
 5. **クライアントコードの修正:**
    - クライアントコードがサブシステムクラスを直接呼び出していた箇所を修正し、代わりに**作成した `Facade` クラスのメソッドを呼び出す**ように変更します。クライアントは `Facade` クラス（またはそのインターフェース）のみに依存するようにします。
 6. **テスト:** 各ステップの後、および最終的に、テストを実行してリファクタリングによって外部から見た振る舞いが変わっていないこと、そしてクライアントコードが Facade を通じて正しく機能することを確認します。
