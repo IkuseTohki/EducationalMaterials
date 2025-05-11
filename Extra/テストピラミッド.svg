@@ -1,0 +1,73 @@
+<svg width="350" height="280" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="14" style="background-color: #1e1e1e;"> {/* 背景色を仮に設定 */}
+  <defs>
+    <linearGradient id="gradE2E" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFA07A;stop-opacity:1" /> {/* LightSalmon */}
+      <stop offset="100%" style="stop-color:#FF7F50;stop-opacity:1" /> {/* Coral */}
+    </linearGradient>
+    <linearGradient id="gradIntegration" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEC8B;stop-opacity:1" /> {/* LightGoldenrodYellow */}
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" /> {/* Gold */}
+    </linearGradient>
+    <linearGradient id="gradUnit" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#90EE90;stop-opacity:1" /> {/* LightGreen */}
+      <stop offset="100%" style="stop-color:#3CB371;stop-opacity:1" /> {/* MediumSeaGreen */}
+    </linearGradient>
+  </defs>
+
+  <style>
+    .layer-text {
+      text-anchor: middle;
+      font-weight: bold;
+      fill: #FFFFFF; /* 文字色を白に変更 */
+      stroke: #333; /* 文字の輪郭を少しつける */
+      stroke-width: 0.5px;
+      paint-order: stroke fill; /* 輪郭が文字の内側に来ないように */
+    }
+    .axis-text {
+      font-size: 12px;
+      fill: #CCCCCC; /* 文字色を明るいグレーに変更 */
+    }
+    .axis-line {
+        stroke: #AAAAAA; /* 軸の色を明るいグレーに変更 */
+        stroke-width: 1.5;
+        marker-end: url(#arrowhead);
+    }
+    marker#arrowhead {
+        refX: 5;
+        refY: 2.5;
+        markerWidth: 8;
+        markerHeight: 8;
+        orient: auto;
+    }
+    marker#arrowhead path {
+        d: M 0 0 L 5 2.5 L 0 5 z;
+        fill: #AAAAAA; /* 矢印の色を明るいグレーに変更 */
+    }
+    .pyramid-polygon {
+        stroke: #DDDDDD; /* ピラミッドの線の色を明るいグレーに変更 */
+        stroke-width: 1;
+    }
+  </style>
+
+  <!-- Pyramid Layers -->
+  <polygon points="175,30 135,90 215,90" fill="url(#gradE2E)" class="pyramid-polygon"/>
+  <polygon points="135,90 215,90 255,150 95,150" fill="url(#gradIntegration)" class="pyramid-polygon"/>
+  <polygon points="95,150 255,150 295,210 55,210" fill="url(#gradUnit)" class="pyramid-polygon"/>
+
+  <!-- Layer Labels -->
+  <text x="175" y="65" class="layer-text">E2E / UI</text>
+  <text x="175" y="125" class="layer-text">結合テスト</text>
+  <text x="175" y="185" class="layer-text">単体テスト</text>
+
+  <!-- Axis Labels -->
+  <line x1="30" y1="230" x2="320" y2="230" class="axis-line"/>
+  <text x="325" y="235" class="axis-text">量</text>
+  <text x="175" y="255" text-anchor="middle" class="axis-text">(テストケース数)</text>
+  <text x="65" y="25" class="axis-text" text-anchor="middle">実行遅い</text>
+  <text x="65" y="40" class="axis-text" text-anchor="middle">コスト高</text>
+  <text x="65" y="55" class="axis-text" text-anchor="middle">不安定</text>
+  <text x="285" y="225" class="axis-text" text-anchor="middle">実行速い</text>
+  <text x="285" y="240" class="axis-text" text-anchor="middle">コスト低</text>
+  <text x="285" y="255" class="axis-text" text-anchor="middle">安定</text>
+
+</svg>
